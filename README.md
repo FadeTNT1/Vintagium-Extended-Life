@@ -2,11 +2,11 @@
   <img src="logo.png" width="250">
 </p>
 
-# Vintagium
-Vintagium is an Unofficial Fork of CaffeineMC's ["Sodium"](https://modrinth.com/mod/sodium), ported to 1.12.2 and made to work with Forge Mod Loader.
+# Vintagium:Extended-Life
+Vintagium:Extended-Life is an Unofficial Fork of CaffeineMC's ["Sodium"](https://modrinth.com/mod/sodium), ported to 1.12.2 and made to work with Forge Mod Loader.
 
 ## Disclaimer
-Vintagium is not and never will be compatible with Optifine!
+Vintagium:Extended-Life is not and never will be compatible with Optifine!
 
 
 ## Contributors
