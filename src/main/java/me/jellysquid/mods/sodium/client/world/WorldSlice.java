@@ -106,7 +106,9 @@ public class WorldSlice implements SodiumBlockAccess {
         // section to render, so we need to signal that a chunk render task shouldn't created. This saves a considerable
         // amount of time in queueing instant build tasks and greatly accelerates how quickly the world can be loaded.
         if (section == null || section.isEmpty()) {
-            return null;
+            if (!containsTileEntities(chunk, origin.getY())) {
+                return null;
+            }
         }
 
         StructureBoundingBox volume = new StructureBoundingBox(origin.getMinX() - NEIGHBOR_BLOCK_RADIUS,
@@ -137,6 +139,16 @@ public class WorldSlice implements SodiumBlockAccess {
         }
 
         return new ChunkRenderContext(origin, sections, volume);
+    }
+
+    private static boolean containsTileEntities(Chunk chunk, int sectionY) {
+        for (BlockPos pos : chunk.getTileEntityMap().keySet()) {
+            if ((pos.getY() >> 4) == sectionY) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public WorldSlice(World world) {

@@ -38,6 +38,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import org.embeddedt.embeddium.compat.littletiles.LittleTilesCompat;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -121,7 +122,7 @@ public class ChunkRenderManager<T extends ChunkGraphicsState> implements ChunkSt
         this.translucencySorting = SodiumClientMod.options().advanced.translucencySorting;
         this.translucencyBlockRenderDistance = Math.min(9216, (renderDistance << 4) * (renderDistance << 4));
 
-        this.useBlockFaceCulling = SodiumClientMod.options().advanced.useBlockFaceCulling;
+        this.useBlockFaceCulling = SodiumClientMod.options().advanced.useBlockFaceCulling && !LittleTilesCompat.isLittleTilesLoaded();
     }
 
     public void update(float ticks, FrustumExtended frustum, int frame, boolean spectator) {

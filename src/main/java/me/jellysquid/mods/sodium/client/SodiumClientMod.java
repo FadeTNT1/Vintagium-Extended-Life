@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 public class SodiumClientMod {
 
     public static final String MODID = "vintagium";
-    public static final String MODNAME = "Vintagium";
+    public static final String MODNAME = "Vintagium Extended Life";
     public static final String MOD_VERSION = Loader.instance().getIndexedModList().get(MODID).getVersion();
 
     private static SodiumGameOptions CONFIG;

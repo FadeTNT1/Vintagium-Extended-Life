@@ -15,6 +15,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.embeddedt.embeddium.compat.littletiles.LittleTilesCompat;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -74,7 +75,7 @@ public class ChunkGraphCuller implements ChunkCuller {
     private void initSearch(Vec3d cameraPos, FrustumExtended frustum, int frame, boolean spectator) {
         this.activeFrame = frame;
         this.frustum = frustum;
-        this.useOcclusionCulling = Minecraft.getMinecraft().renderChunksMany;
+        this.useOcclusionCulling = Minecraft.getMinecraft().renderChunksMany && !LittleTilesCompat.isLittleTilesLoaded();
 
         this.visible.clear();
 

@@ -21,7 +21,8 @@ public class MixinParticleManager {
 
     @Inject(method = {"renderParticles", "renderLitParticles"}, at = @At("HEAD"))
     private void preRenderParticles(Entity entity, float partialTicks, CallbackInfo ci) {
-        Frustum frustum = SodiumWorldRenderer.getInstance().getFrustum();
+        SodiumWorldRenderer renderer = SodiumWorldRenderer.getInstanceNullable();
+        Frustum frustum = renderer != null ? renderer.getFrustum() : null;
         boolean useCulling = SodiumClientMod.options().advanced.useParticleCulling;
 
         // Setup the frustum state before rendering particles

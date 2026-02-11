@@ -206,4 +206,15 @@ public class SodiumConfig {
                 .filter(Option::isOverridden)
                 .count();
     }
+
+    public void applyModOverride(String mixin, boolean enabled, String modId) {
+        Option option = this.options.get(getMixinRuleName(mixin));
+
+        if (option == null) {
+            LOGGER.warn("Cannot apply mod override for unknown mixin rule '{}'", mixin);
+            return;
+        }
+
+        option.addModOverride(enabled, modId);
+    }
 }

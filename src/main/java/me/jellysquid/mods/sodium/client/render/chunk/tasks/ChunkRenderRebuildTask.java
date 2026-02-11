@@ -16,7 +16,6 @@ import me.jellysquid.mods.sodium.client.world.WorldSlice;
 import me.jellysquid.mods.sodium.client.world.cloned.ChunkRenderContext;
 import me.jellysquid.mods.sodium.common.util.WorldUtil;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.chunk.VisGraph;
@@ -24,6 +23,7 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
@@ -36,6 +36,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.IFluidBlock;
 import org.embeddedt.embeddium.api.ChunkDataBuiltEvent;
 import org.embeddedt.embeddium.compat.ccl.CCLCompat;
+import org.embeddedt.embeddium.compat.littletiles.LittleTilesCompat;
 
 /**
  * Rebuilds all the meshes of a chunk for each given render pass with non-occluded blocks. The result is then uploaded
@@ -88,6 +89,7 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
 
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         BlockPos renderOffset = this.offset;
+        boolean littleTilesLoaded = LittleTilesCompat.isLittleTilesLoaded();
 
         try {
             for (int relY = 0; relY < 16; relY++) {
@@ -99,17 +101,22 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                     for (int relX = 0; relX < 16; relX++) {
                         IBlockState blockState = slice.getBlockStateRelative(relX + 16, relY + 16, relZ + 16);
                         Block block = blockState.getBlock();
+                        pos.setPos(baseX + relX, baseY + relY, baseZ + relZ);
+                        buffers.setRenderOffset(pos.getX() - renderOffset.getX(), pos.getY() - renderOffset.getY(), pos.getZ() - renderOffset.getZ());
+
+                        TileEntity entity = null;
+
+                        if (block.hasTileEntity(blockState) || (littleTilesLoaded && block == Blocks.AIR)) {
+                            entity = slice.getTileEntity(pos);
+                        }
 
                         // If the block is vanilla air, assume it renders nothing. Don't use isAir because mods
                         // can abuse it for all sorts of things
-                        if (blockState.getMaterial() == Material.AIR) {
+                        if (block == Blocks.AIR && entity == null) {
                             continue;
                         }
 
                         EnumBlockRenderType renderType = blockState.getRenderType();
-
-                        pos.setPos(baseX + relX, baseY + relY, baseZ + relZ);
-                        buffers.setRenderOffset(pos.getX() - renderOffset.getX(), pos.getY() - renderOffset.getY(), pos.getZ() - renderOffset.getZ());
 
                         if(renderType != EnumBlockRenderType.INVISIBLE) {
                             if (slice.getWorldType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
@@ -143,21 +150,30 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                             }
                         }
 
-                        if (block.hasTileEntity(blockState)) {
-                            TileEntity entity = slice.getTileEntity(pos);
+                        if (entity != null || block.hasTileEntity(blockState)) {
+                            if (entity == null) {
+                                entity = slice.getTileEntity(pos);
+                            }
 
                             if (entity != null) {
                                 TileEntitySpecialRenderer<TileEntity> renderer = TileEntityRendererDispatcher.instance.getRenderer(entity);
 
                                 if (renderer != null) {
-                                    renderData.addBlockEntity(entity, !renderer.isGlobalRenderer(entity));
+                                    boolean cull = !renderer.isGlobalRenderer(entity);
+
+                                    // LittleTiles can use dynamic tile entities that are culled too aggressively here.
+                                    if (LittleTilesCompat.isLittleTilesTileEntity(entity)) {
+                                        cull = false;
+                                    }
+
+                                    renderData.addBlockEntity(entity, cull);
 
                                     bounds.addBlock(relX, relY, relZ);
                                 }
                             }
                         }
 
-                        if (blockState.isOpaqueCube()) {
+                        if (block != Blocks.AIR && blockState.isOpaqueCube()) {
                             occluder.setOpaqueCube(pos);
                         }
                     }

@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
+import net.minecraftforge.fml.common.Loader;
 
 import java.io.File;
 import java.util.List;
@@ -28,8 +29,39 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
             throw new RuntimeException("Could not load configuration file for " + SodiumClientMod.MODNAME, e);
         }
 
+        if (isLittleTilesPresent()) {
+            this.config.applyModOverride("features.chunk_rendering", false, "littletiles");
+            this.config.applyModOverride("features.particle.cull", false, "littletiles");
+            this.logger.warn("Detected LittleTiles, enabling compatibility mode by disabling Sodium chunk-rendering and particle-culling mixins");
+        }
+
         this.logger.info("Loaded configuration file for " + SodiumClientMod.MODNAME + ": {} options available, {} override(s) found",
                 this.config.getOptionCount(), this.config.getOptionOverrideCount());
+    }
+
+    private static boolean isLittleTilesPresent() {
+        if (isModLoadedSafe("littletiles")) {
+            return true;
+        }
+
+        return isClassPresent("com.creativemd.littletiles.LittleTiles");
+    }
+
+    private static boolean isModLoadedSafe(String modId) {
+        try {
+            return Loader.isModLoaded(modId);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    private static boolean isClassPresent(String className) {
+        try {
+            Class.forName(className, false, Thread.currentThread().getContextClassLoader());
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     @Override

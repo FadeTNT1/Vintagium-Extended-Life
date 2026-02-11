@@ -4,16 +4,14 @@ import me.jellysquid.mods.sodium.client.SodiumClientMod;
 import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraftClient {
-    /**
-     * @author JellySquid
-     * @reason Make ambient occlusion user configurable
-     */
-    @Overwrite
-    public static boolean isAmbientOcclusionEnabled() {
-        return SodiumClientMod.options().quality.smoothLighting != SodiumGameOptions.LightingQuality.OFF;
+    @Inject(method = "isAmbientOcclusionEnabled", at = @At("HEAD"), cancellable = true, require = 0)
+    private static void sodium$overrideAmbientOcclusion(CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(SodiumClientMod.options().quality.smoothLighting != SodiumGameOptions.LightingQuality.OFF);
     }
 }
