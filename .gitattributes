@@ -1,2 +1,4 @@
-* text eol=lf
-* text eol=l
+* text=auto eol=lf
+*.bat text eol=crlf
+gradlew text eol=lf
+gradle/wrapper/gradle-wrapper.jar binary
